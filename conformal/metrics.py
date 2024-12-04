@@ -36,7 +36,6 @@ def compute_set_size_metrics(prediction_sets):
         'max_size': np.max(set_sizes),
         'min_size': np.min(set_sizes),
         'std_size': np.std(set_sizes),
-        'set_sizes': set_sizes  # Optionally include all sizes
     }
 
     return size_metrics

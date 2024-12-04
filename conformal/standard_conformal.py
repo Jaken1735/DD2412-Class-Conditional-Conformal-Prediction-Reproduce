@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from metrics import *
-from utils import *
+from conformal.metrics import *
+from conformal.utils import *
 
 """
 Standard Conformal Prediction Case
