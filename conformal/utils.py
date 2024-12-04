@@ -19,6 +19,18 @@ def load_dataset(dataset_name, data_folder='data'):
     labels = jnp.array(labels)
     return softmax_scores, labels
 
+def random_split(X, y, avg_num_per_class, seed=0):
+    np.random.seed(seed)
+    num_classes = np.max(y) + 1
+    num_samples = avg_num_per_class * num_classes
+    
+    idx1 = np.random.choice(np.arange(len(y)), size=num_samples, replace=False) # Numeric index
+    idx2 = ~np.isin(np.arange(len(y)), idx1) # Boolean index
+    X1, y1 = X[idx1], y[idx1]
+    X2, y2 = X[idx2], y[idx2]
+    
+    return X1, y1, X2, y2
+
 
 def split_X_and_y(X, y, n_k, num_classes, seed=0, split='balanced'):
     key = jax.random.PRNGKey(seed)

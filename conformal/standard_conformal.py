@@ -7,6 +7,64 @@ from utils import *
 Standard Conformal Prediction Case
 """
 
+def compute_exact_coverage_parameters(scores, alpha, default_value=np.inf):
+
+    n = len(scores)
+    if n == 0:
+        print(f"Insufficient samples (n={n}). Using default threshold: {default_value}")
+        return {'q_a': default_value, 'q_b': default_value, 'gamma': 1.0}
+
+    # Sort the scores in ascending order
+    sorted_scores = np.sort(scores)
+
+    # Compute k, the largest integer such that k / (n + 1) <= 1 - alpha
+    k = int(np.floor((n + 1) * (1 - alpha)))
+
+    # Handle edge cases where k is 0 or n
+    if k == 0:
+        q_a = sorted_scores[0]
+        q_b = q_a
+        gamma = 1.0
+    elif k >= n:
+        q_a = sorted_scores[-1]
+        q_b = q_a
+        gamma = 1.0
+    else:
+        q_a = sorted_scores[k - 1]
+        q_b = sorted_scores[k]
+        gamma = (n + 1) * (1 - alpha) - k
+
+    exact_params = {'q_a': q_a, 'q_b': q_b, 'gamma': gamma}
+    return exact_params
+
+
+def construct_exact_prediction_sets(scores_all, exact_params, seed=0):
+
+    q_a = exact_params['q_a']
+    q_b = exact_params['q_b']
+    gamma = exact_params['gamma']
+
+    num_samples = len(scores_all)
+
+    # Set random seed for reproducibility
+    np.random.seed(seed)
+
+    # Generate random uniform variables for each sample
+    U = np.random.uniform(0, 1, size=num_samples)
+
+    prediction_sets = []
+    for i in range(num_samples):
+        if U[i] <= gamma:
+            threshold = q_a
+        else:
+            threshold = q_b
+        prediction_set = np.where(scores_all[i] <= threshold)[0]
+        prediction_sets.append(prediction_set)
+
+    return prediction_sets
+
+
+
 def compute_conformal_threshold(scores, alpha, default_value=np.inf, exact=False):
     n_samples = len(scores)
 
@@ -66,19 +124,19 @@ def generate_prediction_sets(scores_all, q_hat, exact=False):
 
 
 def perform_standard_conformal_prediction(
-    cal_scores_all, cal_labels, val_scores_all, val_labels, alpha, exact=False
+    cal_scores_all, cal_labels, val_scores_all, val_labels, alpha, exact_coverage=False
 ):
     # Compute q_hat using calibration data
-    q_hat = calculate_q_hat(cal_scores_all, cal_labels, alpha, exact=exact)
+    q_hat = calculate_q_hat(cal_scores_all, cal_labels, alpha, exact=exact_coverage)
 
     # Generate prediction sets for validation data
-    predictions = generate_prediction_sets(val_scores_all, q_hat, exact=exact)
+    predictions = generate_prediction_sets(val_scores_all, q_hat, exact=exact_coverage)
 
     # Compute evaluation metrics (implement these functions separately)
-    coverage_metrics = compute_coverage_metrics(val_labels, predictions, alpha)
-    set_size_metrics = compute_set_size_metrics(predictions)
+    #coverage_metrics = compute_coverage_metrics(val_labels, predictions, alpha)
+    #set_size_metrics = compute_set_size_metrics(predictions)
 
-    return q_hat, predictions, coverage_metrics, set_size_metrics
+    return q_hat, predictions
 
 
 
