@@ -19,7 +19,7 @@ def load_dataset(dataset_name, data_folder='data'):
     labels = jnp.array(labels)
     return softmax_scores, labels
 
-def random_split(X, y, avg_num_per_class, seed=0):
+def random_split(X, y, avg_num_per_class, seed=42):
     np.random.seed(seed)
     num_classes = np.max(y) + 1
     num_samples = avg_num_per_class * num_classes
@@ -77,6 +77,36 @@ def split_X_and_y(X, y, n_k, num_classes, seed=0, split='balanced'):
     X2, y2 = X[~mask], y[~mask]
 
     return X1, y1, X2, y2
+
+
+"""
+Function for remapping after filtering out rare classes
+"""
+def reinitClasses(labels, rare_classes):
+    '''
+    Exclude classes in rare_classes and remap remaining classes to be 0-indexed.
+
+    Outputs:
+        - remaining_idx: Boolean array the same length as labels. Entry i is True
+          iff labels[i] is not in rare_classes.
+        - remapped_labels: Array that only contains the entries of labels that are 
+          not in rare_classes (in order), remapped to 0-based indices.
+        - remapping: Dict mapping old class index to new class index.
+    '''
+    # Identify non-rare samples
+    remaining_idx = ~np.isin(labels, rare_classes)
+    
+    # Extract non-rare labels
+    remaining_labels = labels[remaining_idx]
+    
+    # Use np.unique to get unique labels and remap labels
+    unique_labels, remapped_labels = np.unique(remaining_labels, return_inverse=True)
+    
+    # Create remapping dictionary
+    remapping = {original_label: new_label for new_label, original_label in enumerate(unique_labels)}
+    
+    return remaining_idx, remapped_labels, remapping
+
 
 
 """
