@@ -68,6 +68,7 @@ def selecting_hparameters(totalcal_labels, num_classes, alpha):
     - num_clusters: Number of clusters to form.
     - frac_clustering: Fraction of data to use for clustering.
     """
+    #np.random.seed(0)
     # Step 1: Count the number of samples per class
     cts_dict = Counter(totalcal_labels)
     cts = [cts_dict.get(k, 0) for k in range(num_classes)]

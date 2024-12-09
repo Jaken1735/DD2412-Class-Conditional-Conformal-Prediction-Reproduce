@@ -19,13 +19,13 @@ def load_dataset(dataset_name, data_folder='data'):
     labels = jnp.array(labels)
     return softmax_scores, labels
 
-def random_split(X, y, avg_num_per_class, seed=42):
-    np.random.seed(seed)
+def random_split(X, y, avg_num_per_class, seed=0):
+    #np.random.seed(seed)
     num_classes = np.max(y) + 1
     num_samples = avg_num_per_class * num_classes
     
-    idx1 = np.random.choice(np.arange(len(y)), size=num_samples, replace=False) # Numeric index
-    idx2 = ~np.isin(np.arange(len(y)), idx1) # Boolean index
+    idx1 = np.random.choice(np.arange(len(y)), size=num_samples, replace=False)
+    idx2 = ~np.isin(np.arange(len(y)), idx1) 
     X1, y1 = X[idx1], y[idx1]
     X2, y2 = X[idx2], y[idx2]
     
@@ -113,7 +113,7 @@ def reinitClasses(labels, rare_classes):
 Scoring Functions below
 """
 
-def compute_APS_scores(softmax_scores, randomize=True, seed=0):
+def compute_APS_scores(softmax_scores):
     n_samples, n_classes = softmax_scores.shape
 
     # Step 1: Sort the softmax scores in descending order for each sample
@@ -128,17 +128,11 @@ def compute_APS_scores(softmax_scores, randomize=True, seed=0):
     cumulative_probs_original = jnp.take_along_axis(cumulative_probs, inv_sorted_indices, axis=1)
 
     # Step 4: Compute the APS conformity scores for all classes
-    if randomize:
-        # Use JAX's PRNG for random number generation
-        key = jax.random.PRNGKey(seed)
-        U = jax.random.uniform(key, shape=(n_samples, n_classes))
-        aps_scores = cumulative_probs_original - U * softmax_scores
-    else:
-        aps_scores = cumulative_probs_original - softmax_scores
+    aps_scores = cumulative_probs_original - softmax_scores
 
     return aps_scores
 
-def get_RAPS_scores_all(softmax_scores, lambda_param, k_reg, randomize=True, seed=0):
+def get_RAPS_scores_all(softmax_scores, lambda_param, k_reg):
     n_samples, n_classes = softmax_scores.shape
 
     # Step 1: Sort the softmax scores in descending order for each sample
@@ -162,13 +156,7 @@ def get_RAPS_scores_all(softmax_scores, lambda_param, k_reg, randomize=True, see
     scores = cumulative_probs_original + reg_term
 
     # Step 7: Compute RAPS scores
-    if randomize:
-        # Use JAX's PRNG for random number generation
-        key = jax.random.PRNGKey(seed)
-        U = jax.random.uniform(key, shape=softmax_scores.shape)
-        raps_scores = scores - U * softmax_scores
-    else:
-        raps_scores = scores - softmax_scores
+    raps_scores = scores - softmax_scores
 
     return raps_scores
 

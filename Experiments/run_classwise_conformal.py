@@ -10,7 +10,7 @@ if project_root not in sys.path:
 print("PYTHONPATH:", sys.path)
 
 import numpy as np
-from conformal.utils import random_split, compute_softmax_conformity_scores
+from conformal.utils import random_split
 from conformal.classwise_conformal import run_classwise
 from conformal.metrics import compute_coverage_metrics, compute_set_size_metrics
 
@@ -33,23 +33,24 @@ softmax_scores, labels = load_cifar100_data()
 print(f"Softmax scores shape: {softmax_scores.shape}")
 print(f"Labels shape: {labels.shape}")
 
-# Set number of classes
-num_classes = 100
+#### PARAMETERS ####
+SEED = 2
+np.random.seed(SEED)
+N_AVG = 10
+num_classes = 100 # CIFAR-100
+###################
+
+# SCORING FUNCTIONS
+conformal_scores_all = 1 - softmax_scores
 
 # Step 2: Split Data into Calibration and Validation Sets
-X_calib, y_calib, X_valid, y_valid = random_split(
-    softmax_scores, labels, avg_num_per_class=50, seed=42
-)
-
-# Step 3: Compute Conformity Scores
-calib_conformity_scores = compute_softmax_conformity_scores(X_calib)
-valid_conformity_scores = compute_softmax_conformity_scores(X_valid)
+X_calib, y_calib, X_valid, y_valid = random_split(conformal_scores_all, labels, avg_num_per_class=N_AVG, seed=SEED)
 
 # Step 4: Perform Classwise Conformal Prediction
 q_hat, predictions = run_classwise(
-    calibration_scores=calib_conformity_scores,
+    calibration_scores=X_calib,
     calibration_labels=y_calib,
-    validation_scores=valid_conformity_scores,
+    validation_scores=X_valid,
     alpha=0.1,
 )
 

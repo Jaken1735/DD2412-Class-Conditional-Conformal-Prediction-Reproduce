@@ -14,7 +14,7 @@ from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 
 # Ensure necessary functions are imported or defined
-from conformal.utils import random_split, compute_softmax_conformity_scores, reinitClasses
+from conformal.utils import random_split, reinitClasses, compute_APS_scores, get_RAPS_scores_all
 from conformal.metrics import create_classwise_prediction_sets, compute_all_metrics
 from conformal.clustered_conformal import embed_all_classes, rareClasses, compute_cluster_specific_qhats, generate_prediction_sets, selecting_hparameters
 
@@ -33,28 +33,34 @@ softmax_scores, labels = load_cifar100_data()
 print('Predicted Index: ', np.max(labels[0]))
 
 #### PARAMETERS ####
-SEED = 0
+SEED = 2
 np.random.seed(SEED)
-N_AVG = 40
+N_AVG = 20
+lmbda = 0.0005
+kreg = 50
 ###################
 
 # Compute Conformal Score
-conformal_scores_all = 1 - softmax_scores # Using Softmax
+#conformal_scores_all = 1 - softmax_scores # Using Softmax
+#conformal_scores_all = compute_APS_scores(softmax_scores)
+conformal_scores_all = get_RAPS_scores_all(softmax_scores, lmbda, kreg)
+
 
 # Randomly Split Data
 # Adjust avg_num_per_class as needed
 totalcal_scores, totalcal_labels, val_scores, val_labels = random_split(conformal_scores_all, labels, avg_num_per_class=N_AVG, seed=SEED)
 
 # Choosing hparameters for clustering
-num_classes = 100 # CIFAR-100 Dataset
+#num_classes = 100 # CIFAR-100 Dataset
+num_classes = totalcal_scores.shape[1]
 alpha = 0.1
-
 # Call the function
 n_clustering, num_clusters, frac_clustering = selecting_hparameters(totalcal_labels, num_classes, alpha)
 
 print(f"Number of samples per class for clustering: {n_clustering}")
 print(f"Number of clusters: {num_clusters}")
 print(f"Fraction of data per class to use for clustering: {frac_clustering}")
+
 
 # Each point is assigned to clustering set w.p. frac_clustering
 idx1 = np.random.uniform(size=(len(totalcal_labels),)) < frac_clustering 
@@ -63,9 +69,11 @@ labels1 = totalcal_labels[idx1]
 scores2 = totalcal_scores[~idx1]
 labels2 = totalcal_labels[~idx1]
 
+
 # Now we want to identify the rare classes based on the set alpha
 rare_classes = rareClasses(labels=labels1, alpha=alpha, num_classes=num_classes)
 print(f'{len(rare_classes)} of {num_classes} classes are rare in the clustering set and will be assigned to the null cluster')
+
 
 # Start Clustering of Non-rare classes in order to compute cluster-specific conformal quantiles
 num_nonrare_classes = num_classes - len(rare_classes)
@@ -111,7 +119,6 @@ if num_nonrare_classes >= 2 and num_clusters >= 2: # Check if we can start clust
 else:
     cluster_assignments = -np.ones((num_classes,), dtype=int)
     print('Skipped clustering due to insufficient classes or clusters.')
-
 
 # Now we want to compute qhats for the clussters
 cal_scores_all = scores2
