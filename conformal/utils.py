@@ -8,17 +8,6 @@ import jax.numpy as jnp
 Data Preprocessing utils function below
 """
 
-# Loading Data from the pre-trained model (Softmax Scores and True Labels)
-def load_dataset(dataset_name, data_folder='data'):
-    data_path = os.path.join(data_folder, f'{dataset_name}.npz')
-    data = np.load(data_path)  # NumPy is used for loading data
-    softmax_scores = data['softmax']
-    labels = data['labels']
-    # Convert data to JAX arrays
-    softmax_scores = jnp.array(softmax_scores)
-    labels = jnp.array(labels)
-    return softmax_scores, labels
-
 def random_split(X, y, avg_num_per_class, seed=0):
     #np.random.seed(seed)
     num_classes = np.max(y) + 1
