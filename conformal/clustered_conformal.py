@@ -342,36 +342,12 @@ def compute_class_specific_qhats(scores, clusters, alpha, num_classes, default_q
 
 def compute_cluster_specific_qhats(cluster_assignments, cal_scores_all, cal_true_labels, alpha, 
                                    null_qhat='standard', exact_coverage=False):
-    '''
-    Computes cluster-specific quantiles (one for each class) that will result in coverage of (1 - alpha).
-    
-    Inputs:
-        - cluster_assignments: Array of length num_classes where entry i is the index of the cluster that class i belongs to.
-          Clusters should be 0-indexed. Rare classes can be assigned to cluster -1, and they will automatically be given
-          qhat_k = null_qhat.
-        - cal_scores_all: Either:
-            - A (num_instances x num_classes) array where cal_scores_all[i, j] = score of class j for instance i.
-            - A (num_instances,) array of conformity scores for the true class.
-        - cal_true_labels: Array of length num_instances containing true class labels (0-indexed).
-        - alpha: Desired miscoverage rate (e.g., 0.1 for 90% coverage).
-        - null_qhat: For classes that do not appear in cal_true_labels, the class-specific qhat is set to null_qhat.
-          If null_qhat == 'standard', the function computes the qhat for standard conformal and uses that as the default value.
-        - exact_coverage: If True, returns parameters needed to achieve exact coverage.
-    
-    Outputs:
-        - If exact_coverage=False: Returns an array of length num_classes where entry i is the quantile corresponding 
-          to the cluster that class i belongs to. All classes in the same cluster have the same quantile.
-        - If exact_coverage=True: Returns parameters needed to achieve exact coverage.
-    '''
-    # Compute null_qhat if set to 'standard' and not exact coverage
     if null_qhat == 'standard' and not exact_coverage:
         null_qhat = compute_qhat(cal_scores_all, cal_true_labels, alpha)
         
-    # Extract conformity scores for true labels if not already done
     if cal_scores_all.ndim == 2:
         cal_scores_all = cal_scores_all[np.arange(len(cal_true_labels)), cal_true_labels]
         
-    # Handle edge case: all cluster_assignments are -1
     if np.all(cluster_assignments == -1):
         if exact_coverage:
             null_qa, null_qb, null_gamma = get_exact_coverage_conformal_params(cal_scores_all, alpha)
@@ -385,52 +361,22 @@ def compute_cluster_specific_qhats(cluster_assignments, cal_scores_all, cal_true
     # Map true class labels to clusters
     cal_true_clusters = cluster_assignments[cal_true_labels]
     
-    # Compute cluster-specific qhats
-    if exact_coverage:
-        # Compute null parameters if necessary
-        if null_qhat == 'standard':
-            null_qa, null_qb, null_gamma = get_exact_coverage_conformal_params(cal_scores_all, alpha)
-            null_params = {'q_a': null_qa, 'q_b': null_qb, 'gamma': null_gamma}
-        else:
-            null_params = {'q_a': null_qhat, 'q_b': null_qhat, 'gamma': 1.0}
+    cluster_qhats = compute_class_specific_qhats(
+        cal_scores_all, cal_true_clusters, 
+        alpha=alpha, 
+        num_classes=np.max(cluster_assignments) + 1,
+        default_qhat=np.inf,
+        null_qhat=null_qhat
+    )
         
-        clustq_as, clustq_bs, clustgammas = compute_exact_coverage_class_specific_params(
-            cal_scores_all, cal_true_clusters,
-            num_classes=np.max(cluster_assignments) + 1, 
-            alpha=alpha, 
-            default_qhat=np.inf, 
-            null_params=null_params
-        )
+    # Map cluster qhats back to classes
+    num_classes = len(cluster_assignments)
+    class_qhats = np.full(num_classes, null_qhat)
         
-        # Map cluster parameters back to classes
-        num_classes = len(cluster_assignments)
-        q_as = np.full(num_classes, null_params['q_a'])
-        q_bs = np.full(num_classes, null_params['q_b'])
-        gammas = np.full(num_classes, null_params['gamma'])
+    valid_clusters = cluster_assignments >= 0
+    class_qhats[valid_clusters] = cluster_qhats[cluster_assignments[valid_clusters]]
         
-        valid_clusters = cluster_assignments >= 0
-        q_as[valid_clusters] = clustq_as[cluster_assignments[valid_clusters]]
-        q_bs[valid_clusters] = clustq_bs[cluster_assignments[valid_clusters]]
-        gammas[valid_clusters] = clustgammas[cluster_assignments[valid_clusters]]
-        
-        return q_as, q_bs, gammas
-    else:
-        cluster_qhats = compute_class_specific_qhats(
-            cal_scores_all, cal_true_clusters, 
-            alpha=alpha, 
-            num_classes=np.max(cluster_assignments) + 1,
-            default_qhat=np.inf,
-            null_qhat=null_qhat
-        )
-        
-        # Map cluster qhats back to classes
-        num_classes = len(cluster_assignments)
-        class_qhats = np.full(num_classes, null_qhat)
-        
-        valid_clusters = cluster_assignments >= 0
-        class_qhats[valid_clusters] = cluster_qhats[cluster_assignments[valid_clusters]]
-        
-        return class_qhats
+    return class_qhats
 
 
     

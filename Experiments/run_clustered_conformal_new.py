@@ -35,7 +35,7 @@ print('Predicted Index: ', np.max(labels[0]))
 #### PARAMETERS ####
 SEED = 0
 np.random.seed(SEED)
-N_AVG = 60
+N_AVG = 40
 ###################
 
 # Compute Conformal Score

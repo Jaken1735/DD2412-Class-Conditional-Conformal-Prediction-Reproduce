@@ -113,10 +113,6 @@ def reinitClasses(labels, rare_classes):
 Scoring Functions below
 """
 
-# Functions for computing Conformal Scores
-def compute_softmax_conformity_scores(probabilities):
-    return 1 - probabilities  # Works the same in JAX
-
 def compute_APS_scores(softmax_scores, randomize=True, seed=0):
     n_samples, n_classes = softmax_scores.shape
 
