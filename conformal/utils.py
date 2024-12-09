@@ -8,8 +8,7 @@ import jax.numpy as jnp
 Data Preprocessing utils function below
 """
 
-def random_split(X, y, avg_num_per_class, seed=0):
-    #np.random.seed(seed)
+def random_split(X, y, avg_num_per_class):
     num_classes = np.max(y) + 1
     num_samples = avg_num_per_class * num_classes
     

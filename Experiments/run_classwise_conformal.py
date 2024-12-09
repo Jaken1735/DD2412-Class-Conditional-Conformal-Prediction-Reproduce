@@ -35,16 +35,17 @@ print(f"Labels shape: {labels.shape}")
 
 #### PARAMETERS ####
 SEED = 2
-np.random.seed(SEED)
 N_AVG = 10
 num_classes = 100 # CIFAR-100
 ###################
+
+np.random.seed(SEED)
 
 # SCORING FUNCTIONS
 conformal_scores_all = 1 - softmax_scores
 
 # Step 2: Split Data into Calibration and Validation Sets
-X_calib, y_calib, X_valid, y_valid = random_split(conformal_scores_all, labels, avg_num_per_class=N_AVG, seed=SEED)
+X_calib, y_calib, X_valid, y_valid = random_split(conformal_scores_all, labels, avg_num_per_class=N_AVG)
 
 # Step 4: Perform Classwise Conformal Prediction
 q_hat, predictions = run_classwise(

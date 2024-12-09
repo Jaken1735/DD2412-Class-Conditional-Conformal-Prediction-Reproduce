@@ -34,11 +34,12 @@ print('Predicted Index: ', np.max(labels[0]))
 
 #### PARAMETERS ####
 SEED = 2
-np.random.seed(SEED)
 N_AVG = 20
 lmbda = 0.0005
 kreg = 50
 ###################
+
+np.random.seed(SEED)
 
 # Compute Conformal Score
 #conformal_scores_all = 1 - softmax_scores # Using Softmax
@@ -48,7 +49,7 @@ conformal_scores_all = get_RAPS_scores_all(softmax_scores, lmbda, kreg)
 
 # Randomly Split Data
 # Adjust avg_num_per_class as needed
-totalcal_scores, totalcal_labels, val_scores, val_labels = random_split(conformal_scores_all, labels, avg_num_per_class=N_AVG, seed=SEED)
+totalcal_scores, totalcal_labels, val_scores, val_labels = random_split(conformal_scores_all, labels, avg_num_per_class=N_AVG)
 
 # Choosing hparameters for clustering
 #num_classes = 100 # CIFAR-100 Dataset
