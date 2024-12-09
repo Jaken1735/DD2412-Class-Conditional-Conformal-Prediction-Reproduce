@@ -82,7 +82,7 @@ def compute_conformal_threshold(scores, alpha, default_value=np.inf):
     return threshold
 
 
-def calculate_q_hat(scores_all, true_labels, alpha, exact=False, plot_hist=False):
+def calculate_q_hat(scores_all, true_labels, alpha):
     if scores_all.ndim == 2:
         indices = np.arange(len(true_labels))
         true_scores = scores_all[indices, true_labels]
@@ -90,7 +90,7 @@ def calculate_q_hat(scores_all, true_labels, alpha, exact=False, plot_hist=False
         true_scores = scores_all
 
     # Compute the conformal threshold
-    q_hat = compute_conformal_threshold(true_scores, alpha, exact=exact)
+    q_hat = compute_conformal_threshold(true_scores, alpha)
 
     return q_hat
 
@@ -103,9 +103,9 @@ def generate_prediction_sets(scores_all, q_hat):
     return prediction_sets
 
 
-def perform_standard_conformal_prediction(cal_scores_all, cal_labels, val_scores_all, alpha, exact_coverage=False):
-    q_hat = calculate_q_hat(cal_scores_all, cal_labels, alpha, exact=exact_coverage)
-    predictions = generate_prediction_sets(val_scores_all, q_hat, exact=exact_coverage)
+def perform_standard_conformal_prediction(cal_scores_all, cal_labels, val_scores_all, alpha):
+    q_hat = calculate_q_hat(cal_scores_all, cal_labels, alpha)
+    predictions = generate_prediction_sets(val_scores_all, q_hat)
     return q_hat, predictions
 
 

@@ -51,9 +51,7 @@ q_hat, predictions = perform_standard_conformal_prediction(
     cal_scores_all=X_calib,
     cal_labels=y_calib,
     val_scores_all=X_valid,
-    val_labels=y_valid,
     alpha=0.1,
-    exact_coverage=False
 )
 
 # Step 5: Evaluate the Results
