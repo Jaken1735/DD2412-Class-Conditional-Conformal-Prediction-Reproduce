@@ -10,7 +10,7 @@ if project_root not in sys.path:
 print("PYTHONPATH:", sys.path)
 
 import numpy as np
-from conformal.utils import random_split
+from conformal.utils import random_split, compute_APS_scores, get_RAPS_scores_all
 from conformal.classwise_conformal import run_classwise
 from conformal.metrics import compute_coverage_metrics, compute_set_size_metrics
 
@@ -37,12 +37,16 @@ print(f"Labels shape: {labels.shape}")
 SEED = 2
 N_AVG = 10
 num_classes = 100 # CIFAR-100
+lmbda = 0.0005
+kreg = 50
 ###################
 
 np.random.seed(SEED)
 
 # SCORING FUNCTIONS
 conformal_scores_all = 1 - softmax_scores
+#conformal_scores_all = compute_APS_scores(softmax_scores)
+#conformal_scores_all = get_RAPS_scores_all(softmax_scores, lmbda, kreg)
 
 # Step 2: Split Data into Calibration and Validation Sets
 X_calib, y_calib, X_valid, y_valid = random_split(conformal_scores_all, labels, avg_num_per_class=N_AVG)
