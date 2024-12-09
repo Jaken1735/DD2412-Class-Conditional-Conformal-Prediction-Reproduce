@@ -32,53 +32,6 @@ def random_split(X, y, avg_num_per_class, seed=0):
     return X1, y1, X2, y2
 
 
-def split_X_and_y(X, y, n_k, num_classes, seed=0, split='balanced'):
-    key = jax.random.PRNGKey(seed)
-
-    if split == 'balanced':
-        if isinstance(n_k, int):
-            n_k = n_k * jnp.ones((num_classes,), dtype=int)
-    elif split == 'proportional':
-        if isinstance(n_k, int):
-            # Compute class counts
-            class_counts = jnp.bincount(y, minlength=num_classes)
-            rarest_class_ct = jnp.min(class_counts)
-            frac = n_k / rarest_class_ct
-            n_k = (frac * class_counts).astype(int)
-        else:
-            raise ValueError("n_k must be an integer for 'proportional' split.")
-    else:
-        raise ValueError('Valid split options are "balanced" or "proportional"')
-
-    # Initialize lists to collect selected indices
-    selected_indices_list = []
-    key_seq = jax.random.split(key, num_classes)
-
-    for k in range(num_classes):
-        # Indices of class k
-        idx_k = jnp.where(y == k)[0]
-        n_samples_k = idx_k.shape[0]
-        n_select = jnp.minimum(n_k[k], n_samples_k)
-
-        # Random permutation of indices for class k
-        permuted_idx_k = jax.random.permutation(key_seq[k], idx_k)
-        selected_idx_k = permuted_idx_k[:n_select]
-        selected_indices_list.append(selected_idx_k)
-
-    # Concatenate selected indices
-    selected_indices = jnp.concatenate(selected_indices_list)
-    selected_indices = jnp.sort(selected_indices)  # Optional: sort indices
-
-    # Create a mask for selected indices
-    mask = jnp.zeros(y.shape[0], dtype=bool).at[selected_indices].set(True)
-
-    # Split the data
-    X1, y1 = X[selected_indices], y[selected_indices]
-    X2, y2 = X[~mask], y[~mask]
-
-    return X1, y1, X2, y2
-
-
 """
 Function for remapping after filtering out rare classes
 """
