@@ -16,7 +16,7 @@ from sklearn.mixture import GaussianMixture
 # Ensure necessary functions are imported or defined
 from conformal.utils import random_split, reinitClasses, compute_APS_scores, get_RAPS_scores_all
 from conformal.metrics import create_classwise_prediction_sets, compute_all_metrics
-from conformal.clustered_conformal import embed_all_classes, rareClasses, compute_cluster_specific_qhats, generate_prediction_sets, selecting_hparameters
+from conformal.clustered_conformal import embed_all_classes, rareClasses, compute_cluster_specific_qhats, selecting_hparameters
 
 
 def load_cifar100_data(scores_file='data/results_scores.npy', labels_file='data/results_labels.npy'):

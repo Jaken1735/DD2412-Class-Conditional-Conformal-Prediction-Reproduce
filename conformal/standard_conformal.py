@@ -83,6 +83,7 @@ def compute_conformal_threshold(scores, alpha, default_value=np.inf):
 
 
 def calculate_q_hat(scores_all, true_labels, alpha):
+    #print('hej')
     if scores_all.ndim == 2:
         indices = np.arange(len(true_labels))
         true_scores = scores_all[indices, true_labels]
