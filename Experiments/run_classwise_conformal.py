@@ -34,7 +34,7 @@ print(f"Softmax scores shape: {softmax_scores.shape}")
 print(f"Labels shape: {labels.shape}")
 
 #### PARAMETERS ####
-SEED = 2
+SEED = 1
 N_AVG = 10
 num_classes = 100 # CIFAR-100
 lmbda = 0.0005
