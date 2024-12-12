@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from collections import Counter
+from collections import Counter, defaultdict
 import numpy as np
 
 def quantileThreshold(significanceLevel):
@@ -61,14 +61,12 @@ def selecting_hparameters(totalCalibrationLabels, numberOfClasses, significanceL
     remainingClassCount = jnp.sum(jnp.array(classCounts) >= minCount)
     
     clusteringSampleCount, clusterCount = get_clustering_parameters(remainingClassCount, minCount)
-    print(f'clusteringSampleCount={clusteringSampleCount}, clusterCount={clusterCount}')
+    #print(f'clusteringSampleCount={clusteringSampleCount}, clusterCount={clusterCount}')
     
     # Compute fraction of samples for clustering
     clusteringFraction = clusteringSampleCount / minCount
     
     return clusteringSampleCount, clusterCount, clusteringFraction
-
-from collections import defaultdict
 
 def classSpecificQhats(sampleScores, sampleClusters, significanceLevel, numberOfClasses, defaultQuantile=np.inf, nullQuantile=None):
     """
@@ -195,16 +193,3 @@ def embed_all_classes(scores_all, labels, q=[0.5, 0.6, 0.7, 0.8, 0.9], return_ct
         return embeddings, cts
     else:
         return embeddings
-
-
-
-
-    
-
-
-
-
-
-
-
-
