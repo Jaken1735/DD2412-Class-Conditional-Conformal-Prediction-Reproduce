@@ -63,23 +63,6 @@ def compute_set_size_metrics(prediction_sets):
     return size_metrics
 
 
-def create_classwise_prediction_sets(scores_all, q_hats, exact_coverage=False):
-    '''
-    Inputs:
-        - scores_all: num_instances x num_classes array where scores_all[i,j] = score of class j for instance i
-        - q_hats: as output by compute_class_specific_quantiles
-        - exact_coverage: Must match the exact_coverage setting used to compute q_hats. 
-    '''
-
-    scores_all = np.array(scores_all)
-    set_preds = []
-    num_samples = len(scores_all)
-    for i in range(num_samples):
-        set_preds.append(np.where(scores_all[i,:] <= q_hats)[0])
-
-    return set_preds
-
-
 def compute_all_metrics(val_labels, preds, alpha, cluster_assignments=None):
     class_cond_cov = compute_class_specific_coverage(val_labels, preds)
         
