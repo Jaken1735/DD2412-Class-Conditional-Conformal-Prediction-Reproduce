@@ -1,14 +1,12 @@
-OUTFILE="results.csv"
+OUTFILE="results_classwise.csv"
 if [ ! -f "$OUTFILE" ]; then
-    echo "method,score_func,N_AVG,coverage,covGap,mean_size,std_size" > "$OUTFILE"
+    echo "method,score_func,N_AVG,covGap,covGapStd,mean_size,std_size" > "$OUTFILE"
 fi
 
 #METHODS="standard classwise clustered"
-METHODS="standard"
-#N_AVG_VALUES="10 20 30 40 50 75 100 150"
-N_AVG_VALUES="10"
-#SCORE_FUNCS="softmax APS RAPS"
-SCORE_FUNCS="softmax"
+METHODS="classwise"
+N_AVG_VALUES="10 20 30 40 50 75 100 150"
+SCORE_FUNCS="softmax APS RAPS"
 
 for method in $METHODS; do
     for N in $N_AVG_VALUES; do

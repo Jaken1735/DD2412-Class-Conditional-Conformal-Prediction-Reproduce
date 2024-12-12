@@ -12,7 +12,7 @@ def computeThreshold(scores, alpha, defaultValue=jnp.inf):
 
     quantileLevel = (nSamples + 1) * (1 - alpha) / nSamples
     if quantileLevel > 1:
-        print('Quantile Level exceeded.')
+        #print('Quantile Level exceeded.')
         return float(defaultValue)
 
     sortedScores = jnp.sort(scores)
@@ -57,11 +57,3 @@ def performConformalPrediction(calScoresAll, calLabels, valScoresAll, alpha):
     threshold = getConformalThreshold(calScoresAll, calLabels, alpha)
     predictions = createPredictionSets(valScoresAll, threshold)
     return predictions
-
-
-
-
-
-
-
-

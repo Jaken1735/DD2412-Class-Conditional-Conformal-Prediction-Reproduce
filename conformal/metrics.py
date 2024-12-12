@@ -39,6 +39,7 @@ def compute_coverage_metrics(true_labels, prediction_sets, alpha):
     # Prepare results
     coverage_results = {
         'coverage': coverage,
+        'covGap': coverage - (1 - alpha),
         'miscoverage': miscoverage,
         'expected_coverage': 1 - alpha,
         'expected_miscoverage': alpha,
@@ -69,6 +70,9 @@ def compute_all_metrics(val_labels, preds, alpha, cluster_assignments=None):
     # Average class coverage gap
     avg_class_cov_gap = np.mean(np.abs(class_cond_cov - (1-alpha)))
 
+    # Average class coverage gap error
+    avg_class_cov_gap_std = np.std(np.abs(class_cond_cov - (1-alpha)))
+
     # Average gap for classes that are over-covered
     overcov_idx = (class_cond_cov > (1-alpha))
     overcov_gap = np.mean(class_cond_cov[overcov_idx] - (1-alpha))
@@ -88,6 +92,7 @@ def compute_all_metrics(val_labels, preds, alpha, cluster_assignments=None):
     marginal_cov = compute_coverage(val_labels, preds)
 
     class_cov_metrics = {'mean_class_cov_gap': avg_class_cov_gap, 
+                         'cov_gap_std': avg_class_cov_gap_std,
                          'undercov_gap': undercov_gap, 
                          'overcov_gap': overcov_gap, 
                          'max_gap': max_gap,
@@ -98,9 +103,9 @@ def compute_all_metrics(val_labels, preds, alpha, cluster_assignments=None):
                         }
 
     curr_set_sizes = [len(x) for x in preds]
-    set_size_metrics = {'mean': np.mean(curr_set_sizes), '[.25, .5, .75, .9] quantiles': np.quantile(curr_set_sizes, [.25, .5, .75, .9])}
-    
-    print('CLASS COVERAGE GAP:', avg_class_cov_gap)
-    print('AVERAGE SET SIZE:', np.mean(curr_set_sizes))
+    set_size_metrics = {'set_size_mean': np.mean(curr_set_sizes), 
+                        'set_size_std': np.std(curr_set_sizes),
+                        '[.25, .5, .75, .9] quantiles': np.quantile(curr_set_sizes, [.25, .5, .75, .9])
+                        }
     
     return class_cov_metrics, set_size_metrics

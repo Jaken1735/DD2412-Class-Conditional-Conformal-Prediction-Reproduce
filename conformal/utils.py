@@ -9,7 +9,7 @@ import jax.random as random
 Data Preprocessing utils function below
 """
 
-def random_splitOLD(X, y, avg_num_per_class):
+def random_split(X, y, avg_num_per_class):
     num_classes = np.max(y) + 1
     num_samples = avg_num_per_class * num_classes
     
@@ -21,7 +21,7 @@ def random_splitOLD(X, y, avg_num_per_class):
     return X1, y1, X2, y2
 
 
-def random_split(X, y, avg_num_per_class, key=None):
+def random_split_jax(X, y, avg_num_per_class, key=None):
     if key is None:
         key = random.PRNGKey(0)
 
@@ -74,8 +74,6 @@ Scoring Functions below
 """
 
 def compute_APS_scores(softmax_scores):
-    n_samples, n_classes = softmax_scores.shape
-
     # Step 1: Sort the softmax scores in descending order for each sample
     sorted_indices = jnp.argsort(-softmax_scores, axis=1)
     sorted_softmax = jnp.take_along_axis(softmax_scores, sorted_indices, axis=1)
@@ -93,8 +91,6 @@ def compute_APS_scores(softmax_scores):
     return aps_scores
 
 def get_RAPS_scores_all(softmax_scores, lambda_param, k_reg):
-    n_samples, n_classes = softmax_scores.shape
-
     # Step 1: Sort the softmax scores in descending order for each sample
     sorted_indices = jnp.argsort(-softmax_scores, axis=1)
     sorted_softmax = jnp.take_along_axis(softmax_scores, sorted_indices, axis=1)
@@ -121,4 +117,18 @@ def get_RAPS_scores_all(softmax_scores, lambda_param, k_reg):
     return raps_scores
 
 
+"""
+Data loading
+"""
+# Load CIFAR-100 Data from .npy files
+def load_cifar100_data(scores_file='data/results_scores.npy', labels_file='data/results_labels.npy'):
+    # Get the absolute path to the data files
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    scores_path = os.path.join(base_dir, scores_file)
+    labels_path = os.path.join(base_dir, labels_file)
 
+    #softmax_scores = jnp.load(scores_path)
+    #labels = jnp.load(labels_path)
+    softmax_scores = jnp.array(jnp.load(scores_path), dtype=np.int32)
+    labels = jnp.array(jnp.load(labels_path), dtype=np.int32)
+    return softmax_scores, labels
