@@ -56,7 +56,7 @@ def performConformalPrediction(calScoresAll, calLabels, valScoresAll, alpha):
     """
     threshold = getConformalThreshold(calScoresAll, calLabels, alpha)
     predictions = createPredictionSets(valScoresAll, threshold)
-    return threshold, predictions
+    return predictions
 
 
 
