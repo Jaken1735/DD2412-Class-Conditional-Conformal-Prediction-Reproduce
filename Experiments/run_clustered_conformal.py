@@ -14,7 +14,7 @@ from sklearn.cluster import KMeans
 # from sklearn.mixture import GaussianMixture
 # from sklearn.cluster import AgglomerativeClustering
 
-from conformal.utils import random_splitOLD, reinitClasses, compute_APS_scores, get_RAPS_scores_all
+from conformal.utils import random_split, reinitClasses, compute_APS_scores, get_RAPS_scores_all
 from conformal.metrics import compute_all_metrics
 from conformal.clustered_conformal import embed_all_classes, rareClasses, clusterSpecificQhats, selecting_hparameters
 from conformal.classwise_conformal import classwise_pred_sets
@@ -51,7 +51,7 @@ np.random.seed(SEED)
 conformal_scores_all = 1 - softmax_scores  # Using Softmax
 
 # Randomly Split Data
-totalcal_scores, totalcal_labels, val_scores, val_labels = random_splitOLD(
+totalcal_scores, totalcal_labels, val_scores, val_labels = random_split(
     conformal_scores_all, labels, avg_num_per_class=N_AVG
 )
 

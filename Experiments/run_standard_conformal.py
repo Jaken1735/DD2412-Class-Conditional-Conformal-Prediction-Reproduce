@@ -2,30 +2,22 @@ import sys
 import os
 import argparse
 import jax
-import jax.numpy as jnp
+from jax import config
+config.update("jax_enable_x64", False)
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from conformal.utils import random_split, compute_APS_scores, get_RAPS_scores_all
+from conformal.utils import random_split, compute_APS_scores, get_RAPS_scores_all, load_cifar100_data
 from conformal.standard_conformal import performConformalPrediction
-from conformal.metrics import compute_coverage_metrics, compute_set_size_metrics
-
-# Load CIFAR-100 Data from .npy files
-def load_cifar100_data(scores_file='data/results_scores.npy', labels_file='data/results_labels.npy'):
-    # Get the absolute path to the data files
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    scores_path = os.path.join(base_dir, scores_file)
-    labels_path = os.path.join(base_dir, labels_file)
-
-    softmax_scores = jnp.load(scores_path)
-    labels = jnp.load(labels_path)
-    return softmax_scores, labels
+from conformal.metrics import compute_all_metrics
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--N_AVG', type=int, default=10, help='Average number per class for calibration')
-parser.add_argument('--score_func', nargs='+', default=['standard'], help='Example: --score_func softmax APS RAPS')
+parser.add_argument('--score_func', nargs='+', default=['softmax'], help='Example: --score_func softmax APS RAPS')
 args = parser.parse_args()
 
 #### PARAMETERS ####
@@ -37,7 +29,7 @@ SEED = 2
 key = jax.random.PRNGKey(SEED)
 ###################
 
-# Load softmax scores
+# Load data
 softmax_scores, labels = load_cifar100_data()
 
 # Run for each score_func
@@ -47,7 +39,7 @@ for sf in args.score_func:
     elif sf == 'APS':
         conformal_scores_all = compute_APS_scores(softmax_scores)
     elif sf == 'RAPS':
-        conformal_scores_all = get_RAPS_scores_all(softmax_scores, args.lmbda, args.kreg)
+        conformal_scores_all = get_RAPS_scores_all(softmax_scores, lmbda, kreg)
     else:
         raise ValueError(f"Unknown scoring function: {sf}")
 
@@ -63,7 +55,9 @@ for sf in args.score_func:
     )
 
     # Compute metrics
-    coverage_metrics = compute_coverage_metrics(y_valid, predictions, alpha=alpha)
-    set_size_metrics = compute_set_size_metrics(predictions)
+    coverage_metrics, set_size_metrics = compute_all_metrics(y_valid, predictions, alpha)
 
-    print(f"standard,{sf},{args.N_AVG},{coverage_metrics['coverage']},{coverage_metrics['covGap']},{set_size_metrics['mean_size']},{set_size_metrics['std_size']}")
+    variables = f"standard,{sf},{args.N_AVG},"
+    cov_metrics = f"{coverage_metrics['mean_class_cov_gap']},{coverage_metrics['cov_gap_std']},"
+    set_metrics = f"{set_size_metrics['set_size_mean']},{set_size_metrics['set_size_std']}"
+    print(variables+cov_metrics+set_metrics)
