@@ -127,8 +127,6 @@ def load_cifar100_data(scores_file='data/results_scores.npy', labels_file='data/
     scores_path = os.path.join(base_dir, scores_file)
     labels_path = os.path.join(base_dir, labels_file)
 
-    #softmax_scores = jnp.load(scores_path)
-    #labels = jnp.load(labels_path)
-    softmax_scores = jnp.array(jnp.load(scores_path), dtype=np.int32)
-    labels = jnp.array(jnp.load(labels_path), dtype=np.int32)
+    softmax_scores = jnp.array(jnp.load(scores_path))
+    labels = jnp.array(jnp.load(labels_path))
     return softmax_scores, labels

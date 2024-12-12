@@ -3,7 +3,7 @@ import os
 import argparse
 import jax
 from jax import config
-config.update("jax_enable_x64", False)
+config.update("jax_enable_x64", True)
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 

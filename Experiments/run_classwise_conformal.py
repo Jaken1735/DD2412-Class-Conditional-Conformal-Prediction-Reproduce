@@ -4,7 +4,7 @@ import argparse
 import jax
 import jax.numpy as jnp
 from jax import config
-config.update("jax_enable_x64", False)
+config.update("jax_enable_x64", True)
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -57,7 +57,7 @@ for sf in args.score_func:
     # Compute metrics
     coverage_metrics, set_size_metrics = compute_all_metrics(y_valid, predictions, alpha)
 
-    variables = f"standard,{sf},{args.N_AVG},"
+    variables = f"classwise,{sf},{args.N_AVG},"
     cov_metrics = f"{coverage_metrics['mean_class_cov_gap']},{coverage_metrics['cov_gap_std']},"
     set_metrics = f"{set_size_metrics['set_size_mean']},{set_size_metrics['set_size_std']}"
     print(variables+cov_metrics+set_metrics)
