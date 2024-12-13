@@ -1,4 +1,4 @@
-OUTFILE="results_clustered.csv"
+OUTFILE="results_clustered_.csv"
 if [ ! -f "$OUTFILE" ]; then
     echo "method,score_func,N_AVG,covGap,covGapStd,mean_size,std_size" > "$OUTFILE"
 fi
@@ -25,7 +25,7 @@ for method in $METHODS; do
         
         # Run once per scoring function, passing them individually
         for sf in $SCORE_FUNCS; do
-            python3 "$SCRIPT" --N_AVG "$N" --score_func "$sf" >> "$OUTFILE"
+            python3 "$SCRIPT" --N_AVG "$N" --score_func "$sf" --clustering_method "agglo">> "$OUTFILE"
         done
     done
 done

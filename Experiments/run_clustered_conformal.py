@@ -36,6 +36,8 @@ np.random.seed(SEED)
 parser = argparse.ArgumentParser()
 parser.add_argument('--N_AVG', type=int, default=10, help='Average number per class for calibration')
 parser.add_argument('--score_func', nargs='+', default=['softmax'], help='Example: --score_func softmax APS RAPS')
+parser.add_argument('--clustering_method', type=str, default='kmeans', choices=['kmeans','gmm','agglo'],
+                    help='Which clustering method to use: kmeans, gmm, or agglo.')
 args = parser.parse_args()
 
 softmax_scores, labels = load_cifar100_data()
@@ -83,9 +85,16 @@ for sf in args.score_func:
             filtered_scores, filtered_labels, q=[0.5, 0.6, 0.7, 0.8, 0.9], return_cts=True
         )
 
-        # Clustering (KMeans)
-        kmeans = KMeans(n_clusters=int(num_clusters), random_state=0, n_init=10)
-        nonrare_class_cluster_assignments = kmeans.fit(embeddings, sample_weight=np.sqrt(class_cts)).labels_
+        if args.clustering_method == 'kmeans':
+            model = KMeans(n_clusters=int(num_clusters), random_state=0, n_init=10)
+            nonrare_class_cluster_assignments = model.fit(embeddings, sample_weight=np.sqrt(class_cts)).labels_
+        elif args.clustering_method == 'gmm':
+            model = GaussianMixture(n_components=int(num_clusters), random_state=0)
+            model.fit(embeddings)
+            nonrare_class_cluster_assignments = model.predict(embeddings)
+        elif args.clustering_method == 'agglo':
+            model = AgglomerativeClustering(n_clusters=int(num_clusters))
+            nonrare_class_cluster_assignments = model.fit_predict(embeddings)
         
         # Report cluster sizes
         cluster_count = Counter(nonrare_class_cluster_assignments)
@@ -106,7 +115,7 @@ for sf in args.score_func:
     # Compute metrics
     coverage_metrics, set_size_metrics = compute_all_metrics(val_labels, preds, alpha, cluster_assignments=cluster_assignments)
 
-    variables = f"clustered,{sf},{args.N_AVG},"
+    variables = f"{args.clustering_method},{sf},{args.N_AVG},"
     cov_metrics = f"{coverage_metrics['mean_class_cov_gap']},{coverage_metrics['cov_gap_std']},"
     set_metrics = f"{set_size_metrics['set_size_mean']},{set_size_metrics['set_size_std']}"
     print(variables+cov_metrics+set_metrics)
